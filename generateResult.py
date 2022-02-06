@@ -3,13 +3,13 @@ import os
 from firstLearn import CURRENT_DIRECTORY, folderMustExist, ImageRemembererNet,genPilImage
 
 def init(device, firstModelPath, secondModelPath):
-    net = ImageRemembererNet(500, 6)
+    net = ImageRemembererNet()
     net.to(device)
 
-    netOld = ImageRemembererNet(500, 6)
+    netOld = ImageRemembererNet()
     netOld.to(device)
 
-    netNew = ImageRemembererNet(500, 6)
+    netNew = ImageRemembererNet()
     netNew.to(device)
 
     netOld.load(firstModelPath)

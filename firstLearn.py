@@ -1,13 +1,14 @@
+import random
 import torch
 import os
 from PIL import Image
 
 
 
-
+BATCH_SIZE = 40000
 
 class ImageRemembererNet(torch.nn.Module):
-    def __init__(self, n_hidden_neurons=500, hidden_layers=4):
+    def __init__(self, n_hidden_neurons=500, hidden_layers=6):
 
         super(ImageRemembererNet, self).__init__()
         self.hidden_layers = hidden_layers
@@ -84,21 +85,39 @@ def main(imageName, models, previews, device, net):
             X.append((x, y))
             Y.append(list(map(lambda value: (value * 2) / 255 - 1, image.getpixel((x, y)))))
 
-    X = torch.FloatTensor(X).to(device)
-    Y = torch.FloatTensor(Y).to(device)
+    X_test = torch.FloatTensor(X).to(device)
+    # Y_test = torch.FloatTensor(Y)
 
-    for epoch in range(175001):
-        loss = net.learnBatch(X, Y)
+    imageSize = len(X)
+
+    def genTrainBatch():
+        X_train = []
+        Y_train = []
+
+        for i in range(BATCH_SIZE):
+            index = random.randint(0, imageSize - 1)
+            X_train.append(X[index])
+            Y_train.append(Y[index])
+
+        X_train = torch.FloatTensor(X_train).to(device)
+        Y_train = torch.FloatTensor(Y_train).to(device)
+        return X_train, Y_train
+
+    for epoch in range(175001):       
+        if epoch % 10 == 0:
+            X_train, Y_train = genTrainBatch()
+        
+        loss = net.learnBatch(X_train, Y_train)
+
         if epoch % 1000 == 0:
             print("epoch", epoch, "loss", loss)
             name = epoch // 1000
             net.save(os.path.join(models, f"{name}.model"))
-            preds = net.inference(X)
+            preds = net.inference(X_test)
             genPilImage(image.height, image.width, preds.cpu().detach().numpy()).save(os.path.join(previews,f"{name}.png"))
-
-
+            
 if __name__ == "__main__":
-    imageName = os.path.join(CURRENT_DIRECTORY, "add.png")
+    imageName = os.path.join(CURRENT_DIRECTORY, "images", "add.png")
     models = os.path.join(CURRENT_DIRECTORY, "models-first")
     previews = os.path.join(CURRENT_DIRECTORY, "repaired-first")
 
@@ -107,7 +126,7 @@ if __name__ == "__main__":
     folderMustExist(models)
     folderMustExist(previews)
     
-    net = ImageRemembererNet(500, 6)
+    net = ImageRemembererNet()
     net.to(device)
 
     main(imageName, models, previews, device, net)

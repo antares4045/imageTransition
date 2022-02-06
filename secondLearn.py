@@ -4,7 +4,7 @@ import torch
 from firstLearn import CURRENT_DIRECTORY, folderMustExist, ImageRemembererNet, main
 
 if __name__ == "__main__":
-    imageName = os.path.join(CURRENT_DIRECTORY, "ball.png")
+    imageName = os.path.join(CURRENT_DIRECTORY, "images", "ball.png")
     models = os.path.join(CURRENT_DIRECTORY, "models-second")
     previews = os.path.join(CURRENT_DIRECTORY, "repaired-second")
 
@@ -15,7 +15,7 @@ if __name__ == "__main__":
     folderMustExist(models)
     folderMustExist(previews)
     
-    net = ImageRemembererNet(500, 6)
+    net = ImageRemembererNet()
     net.to(device)
     net.load(firstModel)
 
